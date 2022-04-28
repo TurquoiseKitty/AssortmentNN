@@ -1,0 +1,2 @@
+# AssortmentNN
+Assortment Neural Network
