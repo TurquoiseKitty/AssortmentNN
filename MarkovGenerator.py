@@ -54,3 +54,35 @@ def GenMarkovM(product_num, gen_func = lambda x : GenTransprob(x)):
     M = M / M.sum(axis=1, keepdims = True)
     return M
 
+# probability vec to instance choice
+def Pvec_to_Choice(p_vec):
+    if not sum(p_vec) > 1.0 - 1e-6 and sum(p_vec) < 1.0 + 1e-6:
+        print("WRONG PROBABILITY!")
+        return
+    index = np.random.choice(len(p_vec), 1, p=p_vec)[0]
+    indicate = np.zeros(len(p_vec))
+    indicate[index] = 1
+    return indicate
+
+# Note that, the arriving frequency Lams corresponds to each product
+# but not product 0
+# same is the case with Assort
+# which does not contain product 0
+def Absorbing_Calculator(Lams, TransP, Assorts):
+    Lams = np.insert(Lams, 0, 0)
+    Assorts = np.insert(Assorts, 0, 1)
+    S_plus = np.squeeze(np.argwhere(Assorts == 1),axis=1)
+    S_bar = np.squeeze(np.argwhere(Assorts == 0),axis=1)
+    B = TransP[np.expand_dims(S_bar, axis=1), S_plus]
+    C = TransP[np.expand_dims(S_bar, axis=1), S_bar]
+    
+    distri = np.zeros(len(Lams))
+    
+    addi = np.matmul(np.matmul(np.expand_dims(Lams[S_bar], axis=0), np.linalg.inv(np.identity(len(C)) - C)), B)
+    
+    count = 0
+    for i in S_plus:
+        distri[i] = Lams[i] + addi[0,count]
+        count += 1
+    
+    return distri
