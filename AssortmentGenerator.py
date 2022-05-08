@@ -20,7 +20,6 @@ def GenAssortment_Sparse(Vec_Len = 10, sparse_fun = lambda x : np.sqrt(x)):
 # generate assortment containing fixed number of products
 def GenAssortment_Fixed(Vec_Len = 10, fixed_num = 6):
     positions = random.sample(list(range(Vec_Len)),k=fixed_num)
-    print(positions)
     assortment_vec = np.zeros(Vec_Len)
     assortment_vec[positions] = 1
     return assortment_vec
