@@ -58,19 +58,24 @@ class MarkovStructure(nn.Module):
     def __init__(self, Veclen):
         super(MarkovStructure, self).__init__()
         
-        self.weights = nn.Parameter(torch.Tensor(1,Veclen, Veclen))
+        self.weights = nn.Parameter(torch.rand(1,Veclen, Veclen))
 
-        self.bias = nn.Parameter(torch.Tensor(1,Veclen, Veclen))
+        self.bias = nn.Parameter(torch.rand(1,Veclen, Veclen))
+
+        #vself.In = nn.InstanceNorm1d(Veclen, affine=True)
 
         self.fc = nn.Linear(Veclen, 1)
         
         self.sigmoid = nn.Sigmoid()
         
         
+        
     def forward(self, x):
         x = torch.unsqueeze(x, 1)
 
         x = self.weights * x + self.bias
+
+        # x = self.In(x)
 
         x = self.fc(x)
         
