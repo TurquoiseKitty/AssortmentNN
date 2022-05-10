@@ -84,3 +84,17 @@ class MarkovStructure(nn.Module):
         out = self.sigmoid(out)
 
         return out
+
+
+def SillyModel(x):
+
+    veclen = x.shape[1]
+
+    ret = np.zeros((len(x),veclen))
+
+    for i in range(len(x)):
+
+        prob_vec = np.random.uniform(size = veclen)
+        ret[i] = prob_vec / sum(prob_vec)
+
+    return torch.Tensor(ret)
