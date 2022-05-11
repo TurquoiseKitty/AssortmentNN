@@ -24,6 +24,10 @@ def GenAssortment_Fixed(Vec_Len = 10, fixed_num = 6):
     assortment_vec[positions] = 1
     return assortment_vec
 
+def GenAssortment_Abundant(Vec_Len = 10):
+    fixied = random.sample(list(range(Vec_Len)),k=1)[0]
+    return GenAssortment_Fixed(Vec_Len,fixied)
+
 # in some cases we want product 0 in assortment, so use the following function
 def Product_0(vec):
     return np.insert(vec, 0, 0)
