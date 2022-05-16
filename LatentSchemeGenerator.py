@@ -1,6 +1,7 @@
 from ctypes import util
 import numpy as np
 import AssortmentGenerator as AG
+import MarkovGenerator as MG
 
 # functions regarding the mixture of multinomial logit model
 class MMNL_generator:
@@ -110,20 +111,70 @@ class MP_generator:
 
         return ret
 
+class Markov_generator:
+    # N_prod denotes the number of products
+    # N_mix=K means the model is a mixture of K MNL models
+    def __init__(self, N_prod, gen_args={"scheme":"sparse"}):
+        # sum(mixture_para) = 1, sum(choose_para[i,:]) = 1
+        self.N_prod = N_prod
+        self.Markov_mat = np.zeros((N_prod + 1, N_prod + 1))
+        self.arriving_lam = np.zeros(N_prod)
+
+        # by default, we automatically generate the parameters for problem instance
+        self.self_gen_instance(gen_args)
+
+    def self_gen_instance(self, args):
+        lams = np.random.uniform(low = 0, high = 1, size = self.N_prod)
+        lams = lams / sum(lams)
+
+        self.arriving_lam = lams
+
+        if args["scheme"] =="sparse":
+            func = lambda x : MG.GenTransprob_Sparse(x)
+
+        elif args["scheme"] == "even":
+            lamb = args["lambda"]
+            func = lambda x : MG.GenTransprob_Even(x, lb_0 = 0.1, ub_0 = 0.2, lam = lamb)
+
+        else:
+            func = args["gen_func"]
+
+        self.Markov_mat = MG.GenMarkovM(self.N_prod,func)
+
+    def prob_for_assortment(self, assortment):
+        return MG.Absorbing_Calculator(self.arriving_lam, self.Markov_mat, assortment)
+
+    # the output is also one_hot encoded
+    def gen_final_choice(self, assortment):
+        Lams = np.insert(self.arriving_lam, 0, 0)
+        assortment = AG.Product_1(assortment)
+
+        choice = MG.Pvec_to_Choice(Lams)
+
+        while True:
+            if np.dot(choice, assortment)>0:
+                return choice
+            else:
+                choice_prob = self.Markov_mat[np.squeeze(np.argwhere(choice == 1))]
+                choice = MG.Pvec_to_Choice(choice_prob)
+
+
+
 
 # a little check
 if __name__ == "__main__":
     mm_model = MMNL_generator(N_prod = 5,N_mix = 3)
     mp_model = MP_generator(N_prod=5, N_mix = 4)
-    assortment = np.array([1,0,0,1,0])
+    markov_model = Markov_generator(N_prod=5, gen_args = {"scheme":"sparse"})
+    assortment = np.array([0,1,0,1,0])
 
     # print(mm_model.prob_for_assortment(assortment))
     # print(mp_model.permutate_para)
-    print(mp_model.prob_for_assortment(assortment))
+    print(markov_model.prob_for_assortment(assortment))
 
     histo = np.zeros(6)
     for sample in range(100000):
-        histo += mp_model.gen_final_choice(assortment)
+        histo += markov_model.gen_final_choice(assortment)
 
     print(histo/sum(histo))
 
