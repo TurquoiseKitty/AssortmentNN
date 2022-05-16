@@ -31,3 +31,7 @@ def GenAssortment_Abundant(Vec_Len = 10):
 # in some cases we want product 0 in assortment, so use the following function
 def Product_0(vec):
     return np.insert(vec, 0, 0)
+
+# sometimes we want the encoding of product 0 to be 1
+def Product_1(vec):
+    return np.insert(vec, 0, 1)
