@@ -2,6 +2,41 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+# 2 layer network
+class DNN2layer(nn.Module):
+
+    def __init__(self, Veclen, MidSize):
+        super(DNN2layer, self).__init__()
+
+        self.fc1 = nn.Linear(Veclen, MidSize)
+        
+        self.bn1 = nn.BatchNorm1d(MidSize)
+
+        self.fc2 = nn.Linear(MidSize, Veclen)
+        
+        self.bn2 = nn.BatchNorm1d(Veclen)
+        
+        self.relu = nn.ReLU()
+
+        self.softmax = nn.Softmax()
+
+    def forward(self, x):
+
+        out = self.fc1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.fc2(out)
+        out = self.bn2(out)
+        
+        out = self.softmax(out)
+
+        return out
+
+
+
+
+
 # simple bottle neck structure
 # will serve a benchmark
 class Bottleneck(nn.Module):
